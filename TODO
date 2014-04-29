@@ -1,0 +1,7 @@
+TODO LIST
+========
+
+- Add utility functions to send and receive messages without having the explicitly create a socket and a message object.
+- Remove the dependency on Instrument Control Toolbox by using a Java-based library, such as [wsclient](https://bitbucket.org/kvasnica/wsclient) and [Java-WebSocket](https://github.com/TooTallNate/Java-WebSocket).
+- Use events and event collector in Matlab to build and maintain a queue of incoming messages from S2Sim server, so that the client Matlab code does not have to explicitly wait for messages from the server.
+
