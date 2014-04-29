@@ -27,6 +27,12 @@ Currently there is no manual for the library.
 Many functions and classes in the library have extensive help lines and comments, which will help the user to understand how they work.
 Several test scripts are provided in the subfolder `tests` to help the user start using MLS2Sim.
 
+Currently, only a few messages are implemented in the library, mostly for synchronous clients.
+Unsupported incoming messages are wrapped in an object of class `S2SIMMsgDataRaw`.
+To implement a new message type, you need to create a new subclass of `S2SIMMsgData` and update the file `private/CreateDataObject.m` accordingly.
+If possible, please ask me to merge your code into the library.
+If you don't want to write the code, you can email me to ask for support of that message type; however I don't guarantee that I will work on it soon.
+
 A manual for MLS2Sim may be written in the future.
 
 About Us
