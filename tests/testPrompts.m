@@ -61,7 +61,8 @@ try
     if ~success
         error('We have been waiting for a while but did not receive the system time message.');
     end
-    fprintf('S2Sim Current Time is: %d.\n', double(rcvData.CurrentTime));
+    fprintf('S2Sim Current Time is: %d, which is %s\n',...
+        double(rcvData.CurrentTime), datestr(epoch2matlab(rcvData.CurrentTime)));
 catch err
     fclose(socket);
     delete(socket);

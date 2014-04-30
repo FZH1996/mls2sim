@@ -5,7 +5,7 @@ classdef S2SIMMsgSetPrice < S2SIMMsgData
         
     properties (GetAccess=public,SetAccess=protected)
         TimeBegin = uint32(0);  % beginning time for the price(s)
-        Prices = uint32(0);  % price values, as a vector of single-precision floating numbers
+        Prices = uint32(0);  % price values, as a vector of 32-bit integers
     end
     
     methods
