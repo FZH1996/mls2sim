@@ -5,20 +5,11 @@ function seq = sendDemandToS2Sim( socket, id, seq, demand )
 %   id is the client's ID
 %   seq is the current sequence number (e.g. from the previous message).
 %
-%   newseq is the new sequence number (e.g. to be used next time).ß
+%   newseq is the new sequence number (e.g. to be used next time).
 %
 % (C) 2014 by Truong X. Nghiem (nghiem@seas.upenn.edu)
 
-% Prepare message
-demandData = S2SIMMsgSyncClientData(demand);
-sendMsg = S2SIMMessage(demandData);
-sendMsg.SenderID = id;
-sendMsg.ReceiverID = sendMsg.S2SimAddress;
-seq = seq + 1;
-sendMsg.SeqNumber = seq;
-sendData = sendMsg.FormatMessage();
-
-fwrite(socket, sendData, 'uint8');
+sendMsgToS2Sim( socket, id, seq, S2SIMMsgSyncClientData(demand) );
 
 end
 

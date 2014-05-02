@@ -31,25 +31,17 @@ prices = ones(N, 1);
 
 for ii = 1:N
     % Wait until we receive a SetPrice message
-    success = false;
-    nWaits = 0;
-    while nWaits < 50  % try at most x times
-        rcvMsg = S2SIMMessage(socket);
-        rcvData = rcvMsg.Data;
-        if isa(rcvData, 'S2SIMMsgSetPrice')
-            success = true;
-            break;
-        end
-        nWaits = nWaits + 1;
-    end
-    if ~success
+    [success, rcvMsg, seq] = getMsgFromS2Sim(socket, 'SetPrice');
+    if success < 0
         error('We have been waiting for a while but did not receive the SetPrice message.');
+    elseif success > 0
+        error('Error while receiving messages: %s.', rcvMsg);
     end
+    
+    rcvData = rcvMsg.Data;
     
     instants(ii) = double(rcvData.TimeBegin);
     prices(ii) = double(rcvData.Prices(1));
-    
-    seq = rcvMsg.SeqNumber;
     
     % Respond with my demand
     demand = 20000 + rand()*10000;

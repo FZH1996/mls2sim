@@ -16,7 +16,7 @@ function [status, socket, id, seq, info ] = connectToS2Sim( server, port, name, 
 %
 % (C) 2014 by Truong X. Nghiem (nghiem@seas.upenn.edu)
 
-assert(nargin >= 3, 'Not enough arguments.');
+narginchk(3, inf);
 
 if nargin > 3
     assert(isscalar(timeout) && isnumeric(timeout) && timeout > 0, ...
@@ -44,17 +44,9 @@ catch err
     return;
 end
 
-% Prepare request message
-regData = S2SIMMsgSyncConnReq(name);
-sendMsg = S2SIMMessage(regData);
-sendMsg.SenderID = sendMsg.NewClientAddress;
-sendMsg.ReceiverID = sendMsg.S2SimAddress;
-sendMsg.SeqNumber = 0;
-sendData = sendMsg.FormatMessage();
-
 % Send the registration message
 try
-    fwrite(socket, sendData, 'uint8');
+    sendMsgToS2Sim(socket, S2SIMMessage.NewClientAddress, 0, S2SIMMsgSyncConnReq(name));
 catch err
     status = -1;
     fclose(socket);
