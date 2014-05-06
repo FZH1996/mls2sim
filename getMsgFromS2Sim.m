@@ -1,4 +1,4 @@
-function [status, msg, seq] = getMsgFromS2Sim( socket, msgType, msgID, nTrials )
+function [status, msg, seq] = getMsgFromS2Sim( socket, msgType, msgID, nTrials, async )
 %GETMSGFROMS2SIM A wrapper function to receive the next message from S2Sim.
 %   [...] = getMsgFromS2Sim(socket)
 %gets the next message from S2Sim (communication through socket).
@@ -13,14 +13,23 @@ function [status, msg, seq] = getMsgFromS2Sim( socket, msgType, msgID, nTrials )
 %   [status, msg, seq] = getMsgFromS2Sim(...)
 %returns:
 %   + status = 0 if successful; > 0 if there is an error in the
-%     communication (e.g. time-out) or the message format (e.g. message's
-%     header is invalid); < 0 if no messages were matched after nTrials
-%     messages.
+%     communication (e.g. time-out) or in the message format (e.g.
+%     message's header is invalid); < 0 if no messages were matched after
+%     nTrials messages.
 %   + msg is the matched received message, which is an object of class
 %     S2SIMMessage. If the function failed (status ~= 0) then msg will be
 %     an error message string.
 %   + seq is the sequence number from the message (convenient for using in
 %     the next function call to send a message to S2Sim).
+%
+%   [status, msg, seq] = getMsgFromS2Sim(..., async)
+%reads with asynchronous mode switched on or off based on the argument
+%async = true or false.  If async = false (default), the function will wait
+%until messages arrive or until timeout (which results in status > 0; see
+%above).  If async = true, it will not wait and return immediately with
+%status = 2 if there is no data in the input buffer (if there is another
+%error, e.g. invalid message format, status = 1).  Therefore, depending on
+%the application, a status of 2 could be an error or not.
 %
 % (C) 2014 by Truong X. Nghiem (nghiem@seas.upenn.edu)
 
@@ -46,10 +55,24 @@ if matching
     end
 end
 
+if nargin < 5 || isempty(async)
+    async = false;
+else
+    async = boolean(async);
+end
+
 seq = 0;
 status = -1;  % status < 0 if no messages were matched after nTrials messages
 
 while nTrials > 0
+    % In async mode, if no data is available in the input buffer, return
+    % immediately
+    if async && socket.BytesAvailable == 0
+        status = 2;
+        msg = 'Async mode: no bytes available';
+        return;
+    end
+    
     try
         msg = S2SIMMessage(socket);
     catch err
