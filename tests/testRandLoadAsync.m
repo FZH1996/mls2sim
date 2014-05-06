@@ -29,14 +29,18 @@ N = 60;  % number of steps
 instants = zeros(N, 1);
 prices = ones(N, 1);
 
+kk = 1;  % actual time step (because reading is asynchronous)
+
 for ii = 1:N
     % Check if we receive a SetPrice message
     [success, rcvMsg, seq] = getMsgFromS2Sim(socket, 'SetPrice', [], [], true);
     if success < 0
+        disconnectFromS2Sim(socket);
         error('We have been waiting for a while but did not receive the SetPrice message.');
     elseif success > 0
         if success ~= 2
-            error('Error while receiving messages: %s.', rcvMsg);
+            disconnectFromS2Sim(socket);
+            error('Error while receiving messages: %s', rcvMsg);
         end
     end
     
@@ -48,12 +52,14 @@ for ii = 1:N
         % success == 0
         rcvData = rcvMsg.Data;
         
-        instants(ii) = double(rcvData.TimeBegin);
-        prices(ii) = double(rcvData.Prices(1));
+        instants(kk) = double(rcvData.TimeBegin);
+        prices(kk) = double(rcvData.Prices(1));
         
         % Respond with my demand
         demand = 20000 + rand()*10000;
         seq = sendDemandToS2Sim( socket, id, seq, demand );
+        
+        kk = kk + 1;
     end
 end
 

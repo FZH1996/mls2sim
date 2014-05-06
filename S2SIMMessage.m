@@ -128,8 +128,10 @@ classdef S2SIMMessage
             nRead = 4;
             [data, count] = fread(thefile, nRead, 'uint8');
             data = uint8(data)';
-            if count < nRead || ...
-                    typecast(data, 'uint32') ~= typecast(obj.startOfMessage, 'uint32')
+            if count < nRead
+                error('Not enough data received for message header (timeout).');
+            end
+            if typecast(data, 'uint32') ~= typecast(obj.startOfMessage, 'uint32')
                 error('Invalid message: message header not matched.');
             end
             
@@ -138,7 +140,7 @@ classdef S2SIMMessage
             [data, count] = fread(thefile, nRead, 'uint8');
             data = uint8(data)';
             if count < nRead
-                error('Invalid message: ID''s not found.');
+                error('Not enough data received for ID (timeout).');
             end
             obj.SenderID = fromBytesNBO(data(1:2), 'uint16');
             obj.ReceiverID = fromBytesNBO(data(3:4), 'uint16');
@@ -148,7 +150,7 @@ classdef S2SIMMessage
             [data, count] = fread(thefile, nRead, 'uint8');
             data = uint8(data)';
             if count < nRead
-                error('Invalid message: sequence number not found.');
+                error('Not enough data received for sequence number (timeout).');
             end
             obj.SeqNumber = fromBytesNBO(data, 'uint32');
             
@@ -157,7 +159,7 @@ classdef S2SIMMessage
             [data, count] = fread(thefile, nRead, 'uint8');
             data = uint8(data)';
             if count < nRead
-                error('Invalid message: message type/ID not found.');
+                error('Not enough data received for message type/ID (timeout).');
             end
             msgType = fromBytesNBO(data(1:2), 'uint16');
             msgID = fromBytesNBO(data(3:4), 'uint16');
@@ -167,7 +169,7 @@ classdef S2SIMMessage
             [data, count] = fread(thefile, nRead, 'uint8');
             data = uint8(data)';
             if count < nRead
-                error('Invalid message: data length not found.');
+                error('Not enough data received for data length (timeout).');
             end
             nRead = double(fromBytesNBO(data, 'uint32'));  % very stupid that tcpip/fread does not accept integer numbers
 
@@ -175,15 +177,17 @@ classdef S2SIMMessage
             [msgData, count] = fread(thefile, nRead, 'uint8');
             msgData = uint8(msgData)';
             if count < nRead
-                error('Invalid message: message''s data not found.');
+                error('Not enough data received for message data (timeout).');
             end
             
             % Get and check the "message ends" signature (4 bytes)
             nRead = 4;
             [data, count] = fread(thefile, nRead, 'uint8');
             data = uint8(data)';
-            if count < nRead || ...
-                    typecast(data, 'uint32') ~= typecast(obj.endOfMessage, 'uint32')
+            if count < nRead
+                error('Not enough data received for message end (timeout).');
+            end
+            if typecast(data, 'uint32') ~= typecast(obj.endOfMessage, 'uint32')
                 error('Invalid message: message end not matched.');
             end
             

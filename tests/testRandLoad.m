@@ -33,9 +33,11 @@ for ii = 1:N
     % Wait until we receive a SetPrice message
     [success, rcvMsg, seq] = getMsgFromS2Sim(socket, 'SetPrice');
     if success < 0
+        disconnectFromS2Sim(socket);
         error('We have been waiting for a while but did not receive the SetPrice message.');
     elseif success > 0
-        error('Error while receiving messages: %s.', rcvMsg);
+        disconnectFromS2Sim(socket);
+        error('Error while receiving messages: %s', rcvMsg);
     end
     
     rcvData = rcvMsg.Data;

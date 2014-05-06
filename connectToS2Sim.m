@@ -1,6 +1,17 @@
 function [status, socket, id, seq, info ] = connectToS2Sim( server, port, name, timeout )
 %CONNECTTOS2SIM Connect to an S2Sim server as a client.
 %
+%   [status, socket, id, seq, info ] = ...
+%                   connectToS2Sim( server, port, name, timeout )
+%
+%INPUTS:
+% server (string) and port (number) specify the server address and port.
+% name (string) is the object's name which must be registered with S2Sim.
+% timeout (positive number, or []) (optional) is the timeout value, in
+%   seconds, for the socket connection to read data. If it's omitted or
+%   left empty, the default value of 15s is used.
+%
+%OUTPUTS:
 % status is 0 if successful, -1 if failed because of communication or
 %   because of incorrect messages (then
 %   socket will be the exception object in this case), >0 if failed because
@@ -19,10 +30,16 @@ function [status, socket, id, seq, info ] = connectToS2Sim( server, port, name, 
 narginchk(3, inf);
 
 if nargin > 3
-    assert(isscalar(timeout) && isnumeric(timeout) && timeout > 0, ...
+    assert(isempty(timeout) || ...
+        (isscalar(timeout) && isnumeric(timeout) && timeout > 0), ...
         'TimeOut must be a positive number or inf.');
 else
     timeout = [];
+end
+
+% The default timeout is 15s, because S2Sim's timeout is 10s
+if isempty(timeout)
+    timeout = 15;
 end
 
 % status = 0;
@@ -30,11 +47,10 @@ id = [];
 info = [];
 seq = [];
 
-% Open socket
-socket = tcpip(server, port, 'NetworkRole', 'client');
-if ~isempty(timeout)
-    set(socket, 'Timeout', timeout);
-end
+% Open socket with client role, and enlarge the input buffer size to hold
+% more messages in the queue.
+socket = tcpip(server, port, 'NetworkRole', 'client',...
+    'InputBufferSize', 1024, 'Timeout', timeout);
 
 try
     fopen(socket);
